@@ -2,7 +2,7 @@
 
 We present Prompt-aligned Gradient, dubbed ProGrad, to prevent prompt tuning from forgetting the the general knowledge learned from VLMs. In particular, ProGrad only updates the prompt whose gradient is aligned (or non-conflicting) to the “general direction”, which is represented as the gradient of the KL loss of the pre-defined prompt prediction. Extensive experiments demonstrate the stronger few-shot generalization ability of ProGrad over state-of-the-art prompt tuning methods. 
 
-![image](ProGrad.public/Pipeline.pdf)
+![image](ProGrad.public/Pipeline.png)
 
 
 The codes are organized into two folders:
