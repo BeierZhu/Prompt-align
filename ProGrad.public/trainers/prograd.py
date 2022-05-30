@@ -199,15 +199,12 @@ class PromptLearner(nn.Module):
 
 
 CUSTOM_TEMPLATES = {
-    # "OxfordPets": "a photo of a {}, a type of pet.",
     "OxfordPets": "a type of pet, a photo of a {}.",
-    # "OxfordFlowers": "a photo of a {}, a type of flower.",
     "OxfordFlowers": "a type of flower, a photo of a {}.",
     "FGVCAircraft": "a type of aircraft, a photo of a {}.",
     "DescribableTextures": "a texture of {}.",
     "EuroSAT": "a centered satellite photo of {}.",
     "StanfordCars": "a photo of a {}.",
-    # "Food101": "a photo of {}, a type of food.",
     "Food101": "a type of food, a photo of {}.",
     "SUN397": "a photo of a {}.",
     "Caltech101": "a photo of a {}.",
@@ -278,25 +275,6 @@ class CustomCLIP(nn.Module):
         logits = logit_scale * image_features @ text_features.t()
 
         return logits
-
-
-class KnowledgeDistillLoss(_Loss):
-    def __init__(self, alpha, T):
-        super(KnowledgeDistillLoss, self).__init__()
-        self.alpha = alpha
-        self.T = T
-
-    def forward(self, stu_logits, tea_logits, label):
-        xe_loss = F.cross_entropy(stu_logits, label)
-
-        tea_prob = F.softmax(tea_logits / self.T, dim=-1)
-        kl_loss = -tea_prob * F.log_softmax(stu_logits / self.T,
-                                            -1) * self.T * self.T
-        kl_loss = kl_loss.sum(1).mean()
-
-        loss = (1 - self.alpha) * xe_loss + self.alpha * kl_loss
-
-        return loss
 
 
 class ProGradLoss(_Loss):
@@ -374,10 +352,7 @@ class ProGrad(TrainerX):
             self.zs_clip = nn.DataParallel(self.zs_clip)
 
         # build criterion
-        if cfg.LOSS.NAME == "kd":
-            self.criterion = KnowledgeDistillLoss(alpha=cfg.LOSS.ALPHA,
-                                                  T=cfg.LOSS.T)
-        elif cfg.LOSS.NAME == "prograd" or cfg.LOSS.NAME == "vertical_grad":
+        if cfg.LOSS.NAME == "prograd":
             self.criterion = ProGradLoss(T=cfg.LOSS.T)
         else:
             raise NotImplementedError
@@ -400,33 +375,18 @@ class ProGrad(TrainerX):
             output = self.model(image)
             with torch.no_grad():
                 zs_clip_output = self.zs_clip(image)
-            if self.cfg.LOSS.NAME == "kd":
-                loss = self.criterion(output, zs_clip_output.detach(), label)
-                self.model_backward_and_update(loss)
-            elif self.cfg.LOSS.NAME == "prograd":
-                xe_loss, kl_loss = self.criterion(output,
-                                                  zs_clip_output.detach(),
-                                                  label)
-                self.prograd_backward_and_update(xe_loss, kl_loss,
-                                                 self.cfg.LOSS.LAMBDA)
-            elif self.cfg.LOSS.NAME == "vertical_grad":
-                xe_loss, kl_loss = self.criterion(output,
-                                                  zs_clip_output.detach(),
-                                                  label)
-                self.vertical_grad_backward_and_update(xe_loss, kl_loss,
-                                                       self.cfg.LOSS.LAMBDA)
 
-        if self.cfg.LOSS.NAME == "kd":
-            loss_summary = {
-                "loss": loss.item(),
-                "acc": compute_accuracy(output, label)[0].item(),
-            }
-        elif self.cfg.LOSS.NAME == "prograd" or self.cfg.LOSS.NAME == "vertical_grad":
-            loss_summary = {
-                "xe_loss": xe_loss.item(),
-                "kl_loss": kl_loss.item(),
-                "acc": compute_accuracy(output, label)[0].item(),
-            }
+            xe_loss, kl_loss = self.criterion(output,
+                                              zs_clip_output.detach(),
+                                              label)
+            self.prograd_backward_and_update(xe_loss, kl_loss,
+                                                 self.cfg.LOSS.LAMBDA)
+
+        loss_summary = {
+            "xe_loss": xe_loss.item(),
+            "kl_loss": kl_loss.item(),
+            "acc": compute_accuracy(output, label)[0].item(),
+        }
 
         if (self.batch_idx + 1) == self.num_batches:
             self.update_lr()

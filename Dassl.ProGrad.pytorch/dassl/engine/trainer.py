@@ -308,35 +308,6 @@ class TrainerBase:
         self.model_backward(loss)
         self.model_update(names)
 
-    def optgrad_backward_and_update(self, loss_a, loss_b, names=None):
-        self.model_zero_grad(names)
-        # get name of the model parameters
-        names = self.get_model_names(names)
-        # backward loss_a
-        self.detect_anomaly(loss_a)
-        loss_a.backward(retain_graph=True)
-        # normalize gradient
-        for name in names:
-            for p in self._models[name].parameters():
-                p.grad /= torch.linalg.norm(p.grad)
-        # optimizer
-        for name in names:
-            self._optims[name].step()
-
-        for name in names:
-            self._optims[name].zero_grad()
-
-        # backward loss_b
-        self.detect_anomaly(loss_b)
-        loss_b.backward()
-        for name in names:
-            for p in self._models[name].parameters():
-                p.grad /= torch.linalg.norm(p.grad)
-
-        # optimizer
-        for name in names:
-            self._optims[name].step()
-
     def prograd_backward_and_update(
         self, loss_a, loss_b, lambda_=1, names=None
     ):
@@ -372,45 +343,6 @@ class TrainerBase:
                     p.grad = a_grad - lambda_ * torch.dot(
                         a_grad.flatten(), b_grad_norm.flatten()
                     ) * b_grad_norm
-
-        # optimizer
-        for name in names:
-            self._optims[name].step()
-
-    def vertical_grad_backward_and_update(
-        self, loss_a, loss_b, lambda_=1, names=None
-    ):
-        # loss_b not increase is okay
-        # loss_a has to decline
-        self.model_zero_grad(names)
-        # get name of the model parameters
-        names = self.get_model_names(names)
-        # backward loss_a
-        self.detect_anomaly(loss_b)
-        loss_b.backward(retain_graph=True)
-        # normalize gradient
-        b_grads = []
-        for name in names:
-            for p in self._models[name].parameters():
-                b_grads.append(p.grad.clone())
-
-        # optimizer don't step
-        for name in names:
-            self._optims[name].zero_grad()
-
-        # backward loss_b
-        self.detect_anomaly(loss_a)
-        loss_a.backward()
-        for name in names:
-            for p, b_grad in zip(self._models[name].parameters(), b_grads):
-                # calculate cosine distance
-                b_grad_norm = b_grad / torch.linalg.norm(b_grad)
-                a_grad = p.grad.clone()
-                a_grad_norm = a_grad / torch.linalg.norm(a_grad)
-
-                p.grad = a_grad - lambda_ * torch.dot(
-                    a_grad.flatten(), b_grad_norm.flatten()
-                ) * b_grad_norm
 
         # optimizer
         for name in names:
