@@ -4,6 +4,7 @@ We present Prompt-aligned Gradient, dubbed ProGrad, to prevent prompt tuning fro
 
 ![image](ProGrad.public/Pipeline.png)
 
+[[paper link]](https://doi.org/10.48550/arxiv.2205.14865)
 
 The codes are organized into two folders:
 
@@ -14,7 +15,17 @@ The codes are organized into two folders:
 
 If you find our paper or this project helps your research, please kindly consider citing our paper in your publication.
 
-TBD
+```
+@misc{https://doi.org/10.48550/arxiv.2205.14865,
+  doi = {10.48550/ARXIV.2205.14865},
+  url = {https://arxiv.org/abs/2205.14865},
+  author = {Zhu, Beier and Niu, Yulei and Han, Yucheng and Wu, Yue and Zhang, Hanwang},
+  title = {Prompt-aligned Gradient for Prompt Tuning},
+  publisher = {arXiv},
+  year = {2022},
+}
+
+```
 
 ## Acknowledgement
 Our codes are built on top of [CoOp](https://github.com/KaiyangZhou/CoOp) and [Dassl](https://github.com/KaiyangZhou/Dassl.pytorch).
