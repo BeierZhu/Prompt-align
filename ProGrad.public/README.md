@@ -38,8 +38,6 @@ Basic format:
 bash main.sh ${DATASET_NAME} ${CONFIG_NAME} end ${CONTEXT_TOKENS_NUMBER} ${SHOTS} False
 ```
 
-**Please take note that the 8-shots and 16-shots results on Flowers102, DTD, and EuroSAT are gotten with lambda as 0.8.** To get the results in our paper, please change the variable LAMBDA in prograd.sh from 1.0 to 0.8.
-
 For example, to run 1, 2, 4, 8, and 16 shots on stanford_cars, 
 **CLIP + CoOp (M=16, end)**:
 
@@ -50,6 +48,8 @@ For example, to run 1, 2, 4, 8, and 16 shots on stanford_cars,
 - 16 shots: `bash main.sh stanford_cars rn50 end 16 8 False`
 
 **CLIP + CoOp + ProGrad**:
+
+**Please take note that the 8-shots and 16-shots results on Flowers102, DTD, and EuroSAT are gotten with lambda as 0.8.** To get the results in our paper, please change the variable LAMBDA in prograd.sh from 1.0 to 0.8.
 
 - 1 shot: `bash prograd.sh stanford_cars rn50_ep50 end 16 1 False`
 - 2 shots: `bash prograd.sh stanford_cars rn50_ep100 end 16 2 False`
