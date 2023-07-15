@@ -1,4 +1,4 @@
-# Prompt-aligned Gradient for Prompt Tuning
+# [ICCV23] Prompt-aligned Gradient for Prompt Tuning
 
 We present Prompt-aligned Gradient, dubbed ProGrad, to prevent prompt tuning from forgetting the the general knowledge learned from VLMs. In particular, ProGrad only updates the prompt whose gradient is aligned (or non-conflicting) to the “general direction”, which is represented as the gradient of the KL loss of the pre-defined prompt prediction. Extensive experiments demonstrate the stronger few-shot generalization ability of ProGrad over state-of-the-art prompt tuning methods. 
 
@@ -16,13 +16,11 @@ The codes are organized into two folders:
 If you find our paper or this project helps your research, please kindly consider citing our paper in your publication.
 
 ```
-@misc{https://doi.org/10.48550/arxiv.2205.14865,
-  doi = {10.48550/ARXIV.2205.14865},
-  url = {https://arxiv.org/abs/2205.14865},
+@inproceedings{https://doi.org/10.48550/arxiv.2205.14865,
   author = {Zhu, Beier and Niu, Yulei and Han, Yucheng and Wu, Yue and Zhang, Hanwang},
   title = {Prompt-aligned Gradient for Prompt Tuning},
-  publisher = {arXiv},
-  year = {2022},
+  publisher = {International Conference on Computer Vision},
+  year = {2023},
 }
 
 ```
